@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { AdminPageShell } from "@/components/admin/page-shell";
 import { StatusPill } from "@/components/admin/status-pill";
+import { SmartImage } from "@/components/shared/smart-image";
 import { deleteAdminPost, getAdminPosts } from "@/lib/admin-api";
 import type { AdminPostListResponse } from "@/types/admin";
 
@@ -89,7 +90,7 @@ export default function AdminPostsPage() {
                 <td className="px-3 py-3">
                   <div className="flex items-center gap-3">
                     {item.cover_image ? (
-                      <img src={item.cover_image} alt={item.title} className="h-10 w-10 rounded-md object-cover" />
+                      <SmartImage src={item.cover_image} alt={item.title} size="thumbnail" width={40} height={40} className="h-10 w-10 rounded-md object-cover" />
                     ) : (
                       <div className="h-10 w-10 rounded-md bg-stone-100" />
                     )}
@@ -117,7 +118,7 @@ export default function AdminPostsPage() {
         {data?.items.map((item) => (
           <article key={item.id} className="rounded-2xl border border-stone-200 bg-white p-3">
             <div className="flex items-center gap-3">
-              {item.cover_image ? <img src={item.cover_image} alt={item.title} className="h-12 w-12 rounded-md object-cover" /> : <div className="h-12 w-12 rounded-md bg-stone-100" />}
+              {item.cover_image ? <SmartImage src={item.cover_image} alt={item.title} size="thumbnail" width={48} height={48} className="h-12 w-12 rounded-md object-cover" /> : <div className="h-12 w-12 rounded-md bg-stone-100" />}
               <div className="min-w-0 flex-1">
                 <p className="line-clamp-1 text-sm font-medium text-stone-800">{item.title}</p>
                 <p className="line-clamp-1 text-xs text-stone-500">{item.slug}</p>

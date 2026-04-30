@@ -3,9 +3,9 @@
 import { ImagePlus, Loader2, Trash2 } from "lucide-react";
 import { useId, useRef, useState } from "react";
 
-import { uploadAdminImage } from "@/lib/admin-api";
+import { resolvePreviewUrl } from "@/lib/image-url";
+import { uploadImage } from "@/lib/image-upload-service";
 
-const IMAGE_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif"];
 
 type UploadItem = {
@@ -30,51 +30,22 @@ type ImageUploadListFieldProps = {
   hint?: string;
 };
 
-function resolvePreviewUrl(input: string): string {
-  if (!input) return input;
-  if (input.startsWith("/")) return input;
-  try {
-    const parsed = new URL(input);
-    if (parsed.pathname.startsWith("/api/v1/media/")) {
-      return `${parsed.pathname}${parsed.search}`;
-    }
-    return input;
-  } catch {
-    return input;
-  }
-}
-
-function validateImage(file: File): string | null {
-  const mime = file.type.toLowerCase();
-  const fileName = file.name.toLowerCase();
-  if (mime === "image/heic" || mime === "image/heif" || fileName.endsWith(".heic") || fileName.endsWith(".heif")) {
-    return "暂不支持 HEIC/HEIF，请在手机相册中转换为 JPG/PNG 后再上传。";
-  }
-  if (!IMAGE_MIME_TYPES.has(mime)) {
-    return "仅支持 JPG / PNG / WEBP / GIF 格式图片。";
-  }
-  return null;
-}
-
 async function uploadSingleFile(file: File): Promise<UploadItem> {
-  const uploaded = await uploadAdminImage(file);
+  const uploaded = await uploadImage(file);
   return { id: uploaded.id, url: uploaded.url };
 }
 
 export function ImageUploadField({ label, value, onChange, required, disabled, hint }: ImageUploadFieldProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [stageText, setStageText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const inputId = useId();
 
   async function onPickFile(file?: File | null) {
     if (!file || disabled || uploading) return;
-    const checkError = validateImage(file);
-    if (checkError) {
-      setError(checkError);
-      return;
-    }
     setUploading(true);
+    setStageText("正在处理图片...");
     setError(null);
     try {
       const item = await uploadSingleFile(file);
@@ -83,6 +54,7 @@ export function ImageUploadField({ label, value, onChange, required, disabled, h
       setError(err instanceof Error ? err.message : "图片上传失败，请重试。");
     } finally {
       setUploading(false);
+      setStageText("");
       if (inputRef.current) inputRef.current.value = "";
     }
   }
@@ -125,7 +97,7 @@ export function ImageUploadField({ label, value, onChange, required, disabled, h
           className="flex min-h-32 w-full cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-stone-300 bg-stone-50 px-4 text-center"
         >
           {uploading ? <Loader2 className="mb-2 h-5 w-5 animate-spin text-stone-500" /> : <ImagePlus className="mb-2 h-5 w-5 text-stone-500" />}
-          <p className="text-sm font-medium text-stone-700">{uploading ? "上传中..." : `点击上传${label}`}</p>
+          <p className="text-sm font-medium text-stone-700">{uploading ? stageText || "上传中..." : `点击上传${label}`}</p>
           <p className="mt-1 text-xs text-stone-500">支持 {IMAGE_EXTENSIONS.join(" / ")}，可从相册选择或拍照上传</p>
         </label>
       )}
@@ -149,6 +121,7 @@ export function ImageUploadField({ label, value, onChange, required, disabled, h
 export function ImageUploadListField({ label, values, onChange, disabled, hint }: ImageUploadListFieldProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [stageText, setStageText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const inputId = useId();
 
@@ -156,13 +129,9 @@ export function ImageUploadListField({ label, values, onChange, disabled, hint }
     if (!fileList || fileList.length === 0 || disabled || uploading) return;
     const files = Array.from(fileList);
     for (const file of files) {
-      const checkError = validateImage(file);
-      if (checkError) {
-        setError(checkError);
-        return;
-      }
     }
     setUploading(true);
+    setStageText("正在处理图片...");
     setError(null);
     try {
       const uploadedItems: UploadItem[] = [];
@@ -175,6 +144,7 @@ export function ImageUploadListField({ label, values, onChange, disabled, hint }
       setError(err instanceof Error ? err.message : "图片上传失败，请重试。");
     } finally {
       setUploading(false);
+      setStageText("");
       if (inputRef.current) inputRef.current.value = "";
     }
   }
@@ -201,7 +171,7 @@ export function ImageUploadListField({ label, values, onChange, disabled, hint }
         className="flex min-h-24 w-full cursor-pointer items-center justify-center rounded-xl border border-dashed border-stone-300 bg-stone-50 px-4 text-center"
       >
         {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin text-stone-500" /> : <ImagePlus className="mr-2 h-4 w-4 text-stone-500" />}
-        <span className="text-sm text-stone-700">{uploading ? "上传中..." : "上传商品图集"}</span>
+        <span className="text-sm text-stone-700">{uploading ? stageText || "上传中..." : "上传商品图集"}</span>
       </label>
       {values.length ? (
         <div className="grid grid-cols-3 gap-2">

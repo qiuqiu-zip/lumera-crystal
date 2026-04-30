@@ -67,9 +67,13 @@ def build_media_url(media_id: int) -> str:
 
 
 def to_media_read(media: MediaAsset) -> MediaAssetRead:
+    url = build_media_url(media.id)
     return MediaAssetRead(
         id=media.id,
-        url=build_media_url(media.id),
+        url=url,
+        original_url=url,
+        medium_url=url,
+        thumbnail_url=url,
         file_name=media.file_name,
         mime_type=media.mime_type,
         media_kind=media.media_kind,

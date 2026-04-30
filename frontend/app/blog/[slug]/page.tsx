@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { SmartImage } from "@/components/shared/smart-image";
 import { getPost } from "@/lib/api";
 
 export default async function BlogDetailPage({ params }: { params: { slug: string } }) {
@@ -16,7 +17,7 @@ export default async function BlogDetailPage({ params }: { params: { slug: strin
         <p className="text-sm text-ink/70">{post.excerpt}</p>
       </div>
       <div className="relative h-[420px] overflow-hidden rounded-3xl border border-mist/70">
-        <img src={post.cover_image} alt={post.title} className="h-full w-full object-cover" />
+        <SmartImage src={post.cover_image} alt={post.title} size="medium" fill className="h-full w-full object-cover" />
       </div>
       <div className="prose-content" dangerouslySetInnerHTML={{ __html: post.content.replace(/\n/g, "<br />") }} />
     </article>

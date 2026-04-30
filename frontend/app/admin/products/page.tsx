@@ -8,6 +8,7 @@ import { useSearchParams } from "next/navigation";
 import { MobileFilterDrawer } from "@/components/admin/mobile-filter-drawer";
 import { AdminPageShell } from "@/components/admin/page-shell";
 import { StatusPill } from "@/components/admin/status-pill";
+import { SmartImage } from "@/components/shared/smart-image";
 import { bulkStatusAdminProduct, deleteAdminProduct, getAdminCategories, getAdminProducts } from "@/lib/admin-api";
 import type { AdminCategory, AdminProduct, AdminProductListResponse } from "@/types/admin";
 
@@ -221,9 +222,10 @@ export default function AdminProductsPage() {
                         muted
                         loop
                         playsInline
+                        preload="metadata"
                       />
                     ) : (
-                      <img src={item.cover_image || "https://placehold.co/80x80"} alt={item.name} className="h-10 w-10 rounded-md object-cover" />
+                      <SmartImage src={item.cover_image || "https://placehold.co/80x80"} alt={item.name} size="thumbnail" width={40} height={40} className="h-10 w-10 rounded-md object-cover" />
                     )}
                     <div>
                       <p className="font-medium text-stone-800">{item.name}</p>
@@ -265,9 +267,9 @@ export default function AdminProductsPage() {
             </div>
             <div className="mt-2 flex items-center gap-3">
               {item.cover_image_asset?.media_kind === "video" ? (
-                <video src={item.cover_image || "https://placehold.co/80x80"} className="h-14 w-14 rounded-md object-cover" muted loop playsInline />
+                <video src={item.cover_image || "https://placehold.co/80x80"} className="h-14 w-14 rounded-md object-cover" muted loop playsInline preload="metadata" />
               ) : (
-                <img src={item.cover_image || "https://placehold.co/80x80"} alt={item.name} className="h-14 w-14 rounded-md object-cover" />
+                <SmartImage src={item.cover_image || "https://placehold.co/80x80"} alt={item.name} size="thumbnail" width={56} height={56} className="h-14 w-14 rounded-md object-cover" />
               )}
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-stone-800">{item.name}</p>

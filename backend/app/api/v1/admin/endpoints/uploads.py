@@ -50,6 +50,9 @@ async def upload_single_image(
     return {
         "id": item.id,
         "url": item.url,
+        "original_url": item.original_url,
+        "medium_url": item.medium_url,
+        "thumbnail_url": item.thumbnail_url,
         "file_name": item.file_name,
         "mime_type": item.mime_type,
         "media_kind": item.media_kind,

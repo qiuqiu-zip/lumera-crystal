@@ -6,6 +6,9 @@ from pydantic import BaseModel
 class MediaAssetRead(BaseModel):
     id: int
     url: str
+    original_url: str | None = None
+    medium_url: str | None = None
+    thumbnail_url: str | None = None
     file_name: str
     mime_type: str
     media_kind: str

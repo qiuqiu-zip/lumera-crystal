@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Expand, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+import { SmartImage } from "@/components/shared/smart-image";
 import type { MediaAsset } from "@/types";
 
 type MediaType = "image" | "video";
@@ -102,9 +103,9 @@ export function ProductMediaGallery({
           className="group relative block h-[320px] w-full overflow-hidden rounded-3xl border border-mist/70 text-left sm:h-[400px] lg:h-[460px]"
         >
           {activeItem.type === "video" ? (
-            <video src={activeItem.url} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.015]" controls muted playsInline />
+            <video src={activeItem.url} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.015]" controls muted playsInline preload="metadata" />
           ) : (
-            <img src={activeItem.url} alt={activeItem.alt} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.015]" />
+            <SmartImage src={activeItem.url} alt={activeItem.alt} size="medium" fill className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.015]" />
           )}
           <div className="pointer-events-none absolute right-3 top-3 inline-flex items-center gap-1 rounded-full border border-white/50 bg-black/25 px-2.5 py-1 text-xs text-white backdrop-blur">
             <Expand className="h-3.5 w-3.5" />
@@ -124,9 +125,9 @@ export function ProductMediaGallery({
                   className={`relative h-20 overflow-hidden rounded-2xl border transition sm:h-24 ${active ? "border-ink/70 ring-2 ring-ink/20" : "border-mist/70 hover:border-mist"}`}
                 >
                   {item.type === "video" ? (
-                    <video src={item.url} className="h-full w-full object-cover" muted playsInline />
+                    <video src={item.url} className="h-full w-full object-cover" muted playsInline preload="metadata" />
                   ) : (
-                    <img src={item.url} alt={item.alt} className="h-full w-full object-cover" />
+                    <SmartImage src={item.url} alt={item.alt} size="thumbnail" fill className="h-full w-full object-cover" />
                   )}
                 </button>
               );
@@ -191,9 +192,9 @@ export function ProductMediaGallery({
                 onClick={(event) => event.stopPropagation()}
               >
                 {viewerItem.type === "video" ? (
-                  <video src={viewerItem.url} className="max-h-[82vh] max-w-[90vw] rounded-2xl object-contain" controls autoPlay muted loop playsInline />
+                  <video src={viewerItem.url} className="max-h-[82vh] max-w-[90vw] rounded-2xl object-contain" controls autoPlay muted loop playsInline preload="metadata" />
                 ) : (
-                  <img src={viewerItem.url} alt={viewerItem.alt} className="max-h-[82vh] max-w-[90vw] rounded-2xl object-contain" />
+                  <SmartImage src={viewerItem.url} alt={viewerItem.alt} size="original" width={1600} height={1200} className="max-h-[82vh] max-w-[90vw] rounded-2xl object-contain" priority />
                 )}
               </motion.div>
 

@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 
+import { SmartImage } from "@/components/shared/smart-image";
 import { SectionTitle } from "@/components/shared/section-title";
 import { getCategories } from "@/lib/api";
 
@@ -14,7 +14,7 @@ export default async function CategoriesPage() {
         {categories.map((category) => (
           <Link key={category.id} href={"/categories/" + category.slug} className="group overflow-hidden rounded-3xl border border-mist/70 bg-white/80">
             <div className="relative h-56 w-full overflow-hidden">
-              <Image src={category.cover_image} alt={category.name} fill className="object-cover transition duration-500 group-hover:scale-105" />
+              <SmartImage src={category.cover_image} alt={category.name} size="thumbnail" fill className="object-cover transition duration-500 group-hover:scale-105" />
             </div>
             <div className="p-5">
               <p className="font-medium">{category.name}</p>

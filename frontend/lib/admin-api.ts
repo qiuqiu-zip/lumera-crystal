@@ -264,6 +264,9 @@ export async function updateAdminOrderStatus(orderId: number, status: "created" 
 export async function uploadAdminImage(file: File): Promise<{
   id: number;
   url: string;
+  originalUrl?: string;
+  mediumUrl?: string;
+  thumbnailUrl?: string;
   file_name: string;
   mime_type: string;
   media_kind: string;
@@ -272,11 +275,22 @@ export async function uploadAdminImage(file: File): Promise<{
 }> {
   const formData = new FormData();
   formData.append("file", file);
-  return adminFetch<AdminMediaAsset>(
+  const result = await adminFetch<AdminMediaAsset>(
     "/admin/uploads/image",
     {
       method: "POST",
       body: formData,
     }
   );
+  const optional = result as AdminMediaAsset & {
+    original_url?: string;
+    medium_url?: string;
+    thumbnail_url?: string;
+  };
+  return {
+    ...result,
+    originalUrl: optional.original_url ?? result.url,
+    mediumUrl: optional.medium_url ?? result.url,
+    thumbnailUrl: optional.thumbnail_url ?? result.url,
+  };
 }

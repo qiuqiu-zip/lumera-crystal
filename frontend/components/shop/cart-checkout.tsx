@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { SmartImage } from "@/components/shared/smart-image";
 import { clearCart, getCart, removeFromCart, type CartItem, updateCartQuantity } from "@/lib/cart";
 import { createShopOrder, createShopUser, listUserOrders, payShopOrder } from "@/lib/shop-api";
 import type { ShopOrder, ShopPaymentMethod, ShopUser } from "@/types/shop";
@@ -158,7 +159,7 @@ export function CartCheckout() {
                 key={line.product_id}
                 className="flex flex-wrap items-center gap-3 rounded-2xl border border-mist/80 bg-ivory/40 p-3"
               >
-                <img src={line.cover_image} alt={line.name} className="h-16 w-16 rounded-lg object-cover" />
+                <SmartImage src={line.cover_image} alt={line.name} size="thumbnail" width={64} height={64} className="h-16 w-16 rounded-lg object-cover" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-ink">{line.name}</p>
                   <p className="text-xs text-ink/70">单价 ¥{line.price}</p>
