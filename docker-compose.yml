@@ -1,0 +1,108 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: lumera-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-lumera}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-lumera}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - lumera
+
+  logistics:
+    build:
+      context: ./logistics-service
+      dockerfile: Dockerfile
+    container_name: lumera-logistics
+    restart: unless-stopped
+    environment:
+      LOGISTICS_DATABASE_URL: ${LOGISTICS_DATABASE_URL:-sqlite:////app/data/logistics.db}
+    ports:
+      - "${LOGISTICS_PORT:-8010}:8010"
+    volumes:
+      - logistics_data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8010/api/v1/logistics/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - lumera
+
+  app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lumera-backend
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://postgres:postgres@postgres:5432/lumera}
+      APP_CORS_ORIGINS: ${APP_CORS_ORIGINS:-http://localhost:3000}
+      LOGISTICS_SERVICE_ENABLED: ${LOGISTICS_SERVICE_ENABLED:-true}
+      LOGISTICS_SERVICE_BASE_URL: ${LOGISTICS_SERVICE_BASE_URL:-http://logistics:8010/api/v1/logistics}
+      LOGISTICS_SERVICE_TIMEOUT_SECONDS: ${LOGISTICS_SERVICE_TIMEOUT_SECONDS:-8}
+      RUN_MIGRATIONS: ${RUN_MIGRATIONS:-1}
+      DB_WAIT_TIMEOUT: ${DB_WAIT_TIMEOUT:-60}
+      SYNC_ADMIN_ON_START: ${SYNC_ADMIN_ON_START:-1}
+      ADMIN_DEFAULT_EMAIL: ${ADMIN_DEFAULT_EMAIL:-admin@lumeracrystal.com}
+      ADMIN_DEFAULT_PASSWORD: ${ADMIN_DEFAULT_PASSWORD:-Lumera@123456}
+      ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET:-change-this-in-production}
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      logistics:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    networks:
+      - lumera
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: lumera-frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000/api/v1}
+      NEXT_INTERNAL_API_BASE_URL: ${NEXT_INTERNAL_API_BASE_URL:-http://app:8000/api/v1}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000').then(()=>process.exit(0)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    networks:
+      - lumera
+
+volumes:
+  postgres_data:
+  logistics_data:
+
+networks:
+  lumera:
+    driver: bridge
